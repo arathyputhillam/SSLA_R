@@ -1,0 +1,59 @@
+---
+title: "Data and datasets"
+author: "admin"
+date: "10/4/2021"
+output: html_document
+---
+
+First, we load the datasets and tidyverse.
+```{r setup, include=FALSE}
+library(fivethirtyeight)
+library(tidyverse)
+```
+
+Now, we call the specific dataset within `fivethirtyeight` for us to clean and analyse. Here, let's call `comma_survey`  which looks at American's attitudes towards the Oxford comma.
+
+```{r}
+colnames(comma_survey)
+```
+
+Now let's look at a tibble and how the data is generally structured. 
+
+```{r}
+head(comma_survey, 10)
+
+```
+Let's first try `filter`
+```{r}
+filter(comma_survey, gender == "Male")
+```
+
+`Arrange` 
+
+```{r}
+arrange(comma_survey, household_income)
+arrange(comma_survey, desc(age))
+```
+
+```{r}
+select(comma_survey, gender, age)
+```
+```{r}
+select(comma_survey, gender:education)
+```
+```{r}
+select(comma_survey, -(gender:education))
+```
+
+```{r}
+rename(comma_survey, ageiny = age)
+```
+
+Let's look at pipes, which basically makes things a lot more easier and honestly, faster.
+
+```{r}
+comma_survey<-comma_survey %>%
+  group_by(location)%>%
+  rename(inc=household_income)
+colnames(comma_survey)
+``
