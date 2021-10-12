@@ -1,0 +1,88 @@
+---
+title: "eda"
+author: "admin"
+date: "10/7/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(palmerpenguins)
+data(package = 'palmerpenguins')
+head(penguins)
+```
+
+```{r}
+head(penguins)
+```
+```{r}
+nrow(penguins)
+ncol(penguins)
+dim(penguins)
+```
+
+```{r}
+str(penguins)
+```
+```{r}
+table(penguins$species)
+```
+
+```{r}
+summary(penguins$bill_length_mm)
+```
+```{r}
+quantile(penguins$bill_length_mm, na.rm = TRUE)
+```
+
+
+```{r}
+library(tidyverse)
+penguins%>%
+  count(species)
+```
+```{r}
+penguins %>%
+  group_by(species) %>%
+  summarize(across(where(is.numeric), mean, na.rm = TRUE))
+```
+```{r}
+penguins %>%
+  group_by(species) %>%
+  summarize(across(where(is.numeric), median, na.rm = TRUE))
+```
+```{r}
+penguins %>%
+  group_by(species) %>%
+  summarize(across(where(is.numeric), var, na.rm = TRUE))
+```
+```{r}
+penguins %>%
+  group_by(species) %>%
+  summarize(across(where(is.numeric), min, na.rm = TRUE),
+            across(where(is.numeric), max, na.rm = TRUE))
+```
+```{r}
+penguins %>%
+  group_by(species) %>%
+  summarize(across(where(is.numeric), sd, na.rm = TRUE))
+```
+```{r}
+penguins %>%
+  summarize(across(where(is.numeric), min, na.rm = TRUE),
+            across(where(is.numeric), max, na.rm = TRUE))
+```
+
+```{r}
+psych::describe(penguins$bill_length_mm)
+psych::describe.by(penguins$bill_length_mm, group=penguins$species)
+```
+```{r}
+apaTables::apa.cor.table(penguins, table.number = 2, show.conf.interval = TRUE, show.sig.stars = TRUE)
+```
+
+```{r}
+plot(penguins$bill_depth_mm)
+boxplot(penguins$bill_length_mm~penguins$species)
+title(main="Bill length by species")
+```
+

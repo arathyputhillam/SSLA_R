@@ -1,0 +1,68 @@
+---
+title: "janitor"
+author: "admin"
+date: "10/5/2021"
+output: html_document
+---
+
+```{r setup}
+library(janitor) 
+library(dplyr) 
+library(readxl) 
+library(here)
+```
+
+```{r}
+raw <- read_excel("D:/MP/R/ssla_1/janitor_files/dirty_data.xlsx")
+glimpse(raw)
+```
+```{r}
+
+clean1 <- read_excel("D:/MP/R/ssla_1/janitor_files/dirty_data.xlsx", 
+                                 skip = 1,
+                                 .name_repair = make_clean_names)
+glimpse(clean1)
+
+```
+```{r}
+raw <- raw %>%
+  row_to_names(row_number = 1) %>%
+  clean_names()
+```
+
+```{r}
+clean2 <- raw %>%
+  remove_empty(c("rows", "cols")) %>%
+  remove_constant(na.rm = TRUE, quiet = FALSE) %>% # remove all "Yes" values 
+  mutate(hire_date = convert_to_date(hire_date, # handle  dates
+                                     character_fun = lubridate::mdy),
+         cert = dplyr::coalesce(certification, certification_2)) %>%
+  select(-certification, -certification_2) # drop unwanted columns
+```
+```{r}
+clean2
+```
+```{r}
+clean2%>%
+  get_dupes(contains("name"))
+
+```
+```{r}
+wake <- read_csv("https://www2.stat.duke.edu/~sms185/data/econ/parcels.csv")
+
+wake <- clean_names(wake)
+```
+
+```{r}
+colnames(wake)
+```
+
+```{r}
+wake%>%
+  select(heatedarea:city)
+```
+
+```{r}
+wake%>%
+  rename(ha=heatedarea)
+```
