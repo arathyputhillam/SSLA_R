@@ -1,0 +1,223 @@
+---
+title: "intro to text analysis"
+author: "admin"
+date: "10/9/2021"
+output: html_document
+---
+
+```{r}
+text<-c("And the days are not full enough",
+"And the nights are not full enough",
+"And life slips by like a field mouse",
+                "Not shaking the grass.")
+```
+
+```{r}
+text
+```
+This is basically a character vector. We'll turn it into a tidy text dataset so it's easy to analyse.
+
+```{r}
+library(dplyr)
+df<-tibble(line=1:4, text)
+df
+```
+Now we need to transform this to _one-token-per-document-per-row_.
+
+```{r}
+library(tidytext)
+
+df %>%
+  unnest_tokens(word, text)
+
+df2<-df %>%
+  unnest_tokens(word, text)
+
+df_df<-df2%>%
+  count(word, sort = TRUE) 
+```
+
+```{r}
+head(df_df
+     )
+library(wordcloud2)
+wordcloud2(df_df, color = "random-light", backgroundColor = "black")
+```
+
+```{r}
+letterCloud(df_df, word="S", size = 20)
+```
+
+
+
+```{r setup, include=FALSE}
+library(janeaustenr)
+library(dplyr)
+library(stringr)
+```
+
+
+```{r}
+library(tidytext)
+tidy_books <- austen_books() %>%
+  group_by(book) %>%
+  mutate(
+    linenumber = row_number(),
+    chapter = cumsum(str_detect(text, 
+                                regex("^chapter [\\divxlc]", 
+                                      ignore_case = TRUE)))) %>%
+  ungroup() %>%
+  unnest_tokens(word, text)
+colnames(tidy_books)
+```
+```{r}
+tidy_books %>%
+  count(word, sort = TRUE) %>%
+  filter(n > 600)
+```
+```{r}
+tidy_books %>%
+  filter(book=="Persuasion")%>%
+  anti_join(stop_words)%>%
+  count(word, sort = TRUE)
+
+Persuasiontb<-tidy_books %>%
+  filter(book=="Persuasion")%>%
+  anti_join(stop_words)%>%
+  count(word, sort = TRUE)
+```
+
+```{r}
+library(ggplot2)
+Persuasiontb%>%
+  filter(n > 100) %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(n, word)) +
+  geom_col(fill='darkblue') +
+  labs(y = "Words")+
+  theme_bw()
+  
+  
+```
+
+## N-Grams
+
+```{r}
+a_bigrams <- austen_books() %>%
+  unnest_tokens(bigram, text, token = "ngrams", n = 2)%>%
+  count(bigram, sort = TRUE)
+
+a_bigrams
+```
+```{r}
+library(tidyr)
+
+bigrams_sepr <- a_bigrams %>%
+  separate(bigram, c("word1", "word2"), sep = " ")
+bigrams_sepr
+
+filt <- bigrams_sepr %>%
+  filter(!word1 %in% stop_words$word) %>%
+  filter(!word2 %in% stop_words$word)
+filt
+```
+```{r}
+filt %>%
+  filter(word2 == "marry") %>%
+  count(word1, sort = TRUE)
+
+filt %>%
+  filter(word1 == "marry") %>%
+  count(word2, sort = TRUE)
+```
+
+
+## Sentiment Analysis
+
+```{r}
+library(textdata)
+get_sentiments("nrc")
+```
+```{r}
+nrc<-get_sentiments("nrc")
+table(nrc$sentiment)
+```
+```{r}
+nrc_anticipation <- get_sentiments("nrc") %>% 
+  filter(sentiment == "anticipation")
+
+tidy_books %>%
+  filter(book == "Persuasion") %>%
+  inner_join(nrc_anticipation) %>%
+  count(word, sort = TRUE)
+```
+```{r}
+library(tidyverse)
+austen_nrc <- tidy_books %>%
+  inner_join(get_sentiments("nrc")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  ungroup()
+austen_nrc
+```
+
+
+```{r}
+austen_nrc %>%
+  group_by(sentiment) %>%
+  slice_max(n, n = 5) %>% 
+  ungroup() %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(n, word, fill = sentiment)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~sentiment, scales = "free_y") +
+  labs(title="Sentiment Analysis: Persuasion", x = "Contribution to sentiment",
+       y = "Words")+
+  theme_bw()
+```
+```{r}
+custom_sw <- bind_rows(tibble(word = c("miss", "john", "ill"),  
+                                      lexicon = c("custom")), 
+                               stop_words)
+austen_nrcaj<-austen_nrc %>%
+  anti_join(custom_sw)
+
+austen_nrcaj%>%
+  group_by(sentiment) %>%
+  slice_max(n, n = 5) %>% 
+  ungroup() %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(n, word, fill = sentiment)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~sentiment, scales = "free_y") +
+  labs(title="Sentiment Analysis: Persuasion", x = "Contribution to sentiment",
+       y = "Words")+
+  theme_bw()
+```
+```{r}
+library(igraph)
+library(ggraph)
+bgraph <- filt %>%
+  filter(n > 20) %>%
+  graph_from_data_frame()
+
+
+ggraph(bgraph, layout = "fr") +
+  geom_edge_link(aes(edge_alpha = n), show.legend = FALSE,
+                end_cap = circle(.01, 'inches')) +
+  geom_node_point(color = "blue") +
+  geom_node_text(aes(label = name), vjust = 1, hjust = 1)+
+   theme_minimal()
+```
+
+```{r}
+library(genius) 
+
+ftv <- genius_album(artist = "Taylor Swift", album = "Fearless (Taylor's Version")
+ftv
+```
+```{r}
+library(geniusr) 
+
+get_lyrics_search(artist_name = "Taylor Swift",
+                  song_title = "Love Story (Taylor's Version")
+```

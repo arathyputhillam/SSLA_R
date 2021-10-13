@@ -1,0 +1,161 @@
+---
+title: "intro to data viz"
+author: "admin"
+date: "10/7/2021"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+library(palmerpenguins)
+library(ggplot2)
+library(tidyverse)
+```
+
+
+```{r}
+head(penguins)
+```
+
+# Boxplot
+
+```{r boxplot}
+ggplot(penguins, aes(x= species, y=bill_length_mm))+
+  geom_bar(stat="identity", position="dodge")
+```
+```{r}
+ggplot(penguins, aes(x= species, y=bill_length_mm, fill=island))+
+  geom_bar(stat="identity", position="dodge")
+```
+```{r}
+ggplot(penguins, aes(x= species, y=bill_length_mm, fill=as.factor(year)))+
+  geom_bar(stat="identity", position="dodge")
+```
+
+```{r}
+ggplot(penguins, aes(x= species, y=bill_length_mm, fill=as.factor(year)))+
+  geom_bar(stat="identity", position="dodge")+
+  labs(title="Here is a title", subtitle = "This is a subtitle", x="Species", y="Bill Length")
+```
+```{r}
+ggplot(penguins, aes(x= species, y=bill_length_mm, fill=as.factor(year)))+
+  geom_bar(stat="identity", position="dodge")+
+  labs(title="Here is a title", subtitle = "This is a subtitle", x="Species", y="Bill Length")+
+  coord_flip()
+```
+```{r}
+ggplot(penguins, aes(x= species, y=bill_length_mm, fill=as.factor(year)))+
+  geom_bar(stat="identity", position="dodge")+
+  labs(title="Here is a title", subtitle = "This is a subtitle", x="Species", y="Bill Length")+
+  coord_flip()
+```
+
+```{r}
+ggplot(penguins, aes(x= species, y=bill_length_mm))+
+  geom_bar(stat="identity", position="dodge")+
+  labs(title="Here is a title", subtitle = "This is a subtitle", x="Species", y="Bill Length")+
+  facet_wrap(~year)
+```
+```{r}
+ggplot(penguins, aes(x= species, y=bill_length_mm))+
+  geom_bar(stat="identity", position="dodge")+
+  labs(title="Here is a title", subtitle = "This is a subtitle", x="Species", y="Bill Length")+
+  facet_grid(.~year)
+```
+```{r}
+ggplot(penguins, aes(x= species, y=bill_length_mm))+
+  geom_bar(stat="identity", position="dodge")+
+  labs(title="Here is a title", subtitle = "This is a subtitle", x="Species", y="Bill Length")+
+  facet_grid(year~.)
+```
+```{r}
+ggplot(penguins, aes(x= species, y=bill_length_mm))+
+  geom_bar(stat="identity", position="dodge")+
+  labs(title="Here is a title", subtitle = "This is a subtitle", x="Species", y="Bill Length")+
+  facet_grid(year~sex)
+```
+```{r}
+data<-data.frame(
+  penguins%>%
+  na.omit()%>%
+  summarise(mean=mean(bill_length_mm), groups=species))
+colnames(data)
+```
+```{r}
+ggplot(data, aes(x=groups, y=mean))+
+  geom_point( color="blue", size=4, alpha=0.6) +
+  labs(title="Here is a title", subtitle = "This is a subtitle", x="Species", y="Bill Length")+
+  coord_flip()
+```
+
+# Histograms
+```{r}
+hist_df <- gapminder %>%
+  filter(year == 1967)
+
+ggplot(hist_df, aes(lifeExp)) +
+  geom_histogram(binwidth = 5, colour = "white", fill = "#1380A1") +
+  geom_hline(yintercept = 0, size = 1, colour="#333333") +
+  scale_x_continuous(limits = c(25, 90),
+                     breaks = seq(30, 90, by = 5),
+                     labels = c("20", "35", "40", "45", "50", "55", "60", "65", "70", "75", "80", "85", "90"))+
+  theme_classic()+
+  labs(x="", y="")
+```
+
+# Dumbbell chart
+
+#### Life expectancies
+```{r}
+library(gapminder)
+dumbbell_df <- gapminder %>%
+  filter(year == 1957 | year == 2007) %>%
+  select(country, year, lifeExp) %>%
+  spread(year, lifeExp) %>%
+  mutate(gap = `2007` - `1957`) %>%
+  arrange(desc(gap)) %>%
+  head(10)
+library(ggplot2)
+library(ggalt)
+ggplot(dumbbell_df, aes(x = `1957`, xend = `2007`, y = reorder(country, gap), group = country)) + 
+  geom_dumbbell(colour = "#BF9F80",
+                size = 3,
+                colour_x = "#000105",
+                colour_xend = "#232EC1")+
+  theme_bw()+
+  labs(y="Gap by country", x="")
+```
+
+```{r}
+bar_df <- gapminder %>%
+  filter(year == 2002 & continent == "Asia") %>%
+  arrange(desc(lifeExp)) %>%
+  head(5)
+ggplot(bar_df, 
+       aes(x = reorder(country, lifeExp), y = lifeExp)) +
+  geom_bar(stat="identity", position="identity", fill=ifelse(bar_df$country == "Japan", "#232EC1", "#E9E5DC")) +
+  geom_hline(yintercept = 0, size = 1, colour="#BF9F80") +
+  coord_flip() +
+  labs(x="", y="")+
+  theme_bw()
+```
+
+```{r}
+filter(gapminder, year%in%c(1962, 2007)) %>%
+  ggplot(aes(gdpPercap, lifeExp, col = continent)) +
+  geom_point() +
+  facet_grid(continent~year)+
+  scale_color_brewer(palette = "Spectral")+
+  theme_bw()
+```
+```{r}
+filter(gapminder, year%in%c(1962, 2007)) %>%
+  ggplot(aes(gdpPercap, lifeExp, col = continent)) +
+  geom_point() +
+  scale_color_brewer(palette = "Spectral")+
+  theme_bw()
+```
+
+```{r}
+colnames(gapminder)
+```
