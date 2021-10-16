@@ -1,0 +1,65 @@
+---
+title: "unvotes"
+author: "admin"
+date: "10/2/2021"
+output: html_document
+---
+
+
+
+## Data Types and Structure
+
+Let's first look at what kinds of data we can work with
+1. Quant
+2. Qualitative (text, images)
+3. Social media data (e.g., Twitter mining), etc.
+
+### Use install.packages() to install packages and library() to call those packages
+```{r}
+library(unvotes) # United Nations General Assembly Voting Data
+```
+```{r}
+colnames(un_votes)
+head(un_votes, 5) ##first five rows
+tail(un_votes) #last five rows
+summary(un_votes)
+View(un_votes)
+```
+```{r unvotes}
+library(dplyr) # A Grammar of Data Manipulation
+nvotes <- un_votes %>%
+  inner_join(un_roll_calls, by = "rcid") %>%
+  inner_join(un_roll_call_issues, by = "rcid")
+colnames(nvotes)
+```
+```{r}
+colnames(nvotes)
+summary(nvotes)
+```
+```{r}
+library(ggplot2) # Create Elegant Data Visualisations Using the Grammar of Graphics
+library(lubridate) # Make Dealing with Dates a Little Easier
+library(scales) # Scale Functions for Visualization
+library(DT) # A Wrapper of the JavaScript Library 'DataTables'
+nvotes %>%
+  filter(country %in% c("India", "United States", "Switzerland")) %>%
+  mutate(year = year(date)) %>%
+  group_by(country, year, issue) %>%
+  summarize(percent_yes = mean(vote == "yes")) %>%
+  ggplot(mapping = aes(x = year, y = percent_yes, color = country)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "loess", se = FALSE) +
+  facet_wrap(~issue) +
+  scale_y_continuous(labels = percent) +
+  labs(
+    title = "Percentage of 'Yes' votes in the UN General Assembly",
+    subtitle = "1946 to 2019",
+    y = "% Yes",
+    x = "Year",
+    color = "Country"
+  )+
+  theme_minimal()
+```
+
+
+
